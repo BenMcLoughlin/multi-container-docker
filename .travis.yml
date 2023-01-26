@@ -5,20 +5,31 @@ services:
   - docker
 
 before_install:
-  - docker build -t benmcloughlin/react-test -f ./client/Dockerfile.dev ./client
+  - docker build -t benmcl/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run -e CI=true benmcloughlin/react-test npm test
+  - docker run -e CI=true benmcl/react-test npm test
 
 after_success:
-  - docker build -t benmcloughlin/multi-client ./client
-  - docker build -t benmcloughlin/multi-nginx ./nginx
-  - docker build -t benmcloughlin/multi-server ./server
-  - docker build -t benmcloughlin/multi-worker ./worker
+  - docker build -t benmcl/multi-client ./client
+  - docker build -t benmcl/multi-nginx ./nginx
+  - docker build -t benmcl/multi-server ./server
+  - docker build -t benmcl/multi-worker ./worker
   # Log in to the docker CLI
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   # Take those images and push them to docker hub
-  - docker push benmcloughlin/multi-client
-  - docker push benmcloughlin/multi-nginx
-  - docker push benmcloughlin/multi-server
-  - docker push benmcloughlin/multi-worker
+  - docker push benmcl/multi-client
+  - docker push benmcl/multi-nginx
+  - docker push benmcl/multi-server
+  - docker push benmcl/multi-worker
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-west-2'
+  app: 'Multi-Docker-Containers-Stephen-Grider'
+  env: 'Multidockercontainersstephengrider-env'
+  bucket_name: 'elasticbeanstalk-us-west-2-706913327366'
+  bucket_path: 'docker-multi'
+  on:
+    branch: main
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
